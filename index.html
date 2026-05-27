@@ -4,19 +4,21 @@
 <!--
   馳立汽車｜每日排程系統
   橘寶製作 🍊
-  更新日期：2026-05-27 23:55
+  更新日期：2026-05-28 00:20
   更新內容：
-    1. 日期／時間改為白色
-    2. 序號＋車牌＋車款：藍色粗黑體
-    3. 入廠時間：紅色粗黑體
-    4. 隱藏客戶名字（行事曆標題含 🍄 後的文字不顯示，含emoji本身）
-    5. 施作項目：白色粗黑體，顯示於第二行，前綴 🔧
-    6. 歷史備註：橘色細體，第三行，前綴 📝（備註欄 📝 後的文字）
-    7. 💎 備註欄內容不顯示於投影
-    8. 👁️ 標記於序號後（未來廠客）
-    9. 📞 後的文字完整顯示於投影（無完整資訊客）
-    10. 當前時間區段框起來（不用亮暗）
-    11. 每30分鐘自動更新
+    1. 字體改 rem，A+/A- 按鈕控制整體大小
+    2. 預設字體對應約3台可視
+    3. 日期／時間白色粗黑體
+    4. 當下時段白色邊框框起（同時段多台一起框）
+    5. 其餘車輛全亮度正常顯示（無暗色）
+    6. 🍄後名字完全隱藏
+    7. 🔧施作項目白色粗黑體第二行
+    8. 📝歷史備註橘色細體第三行
+    9. 💎/🎉備註不顯示
+    10. 👁️序號後標記
+    11. 📞後文字完整橘色顯示
+    12. 22:00後日期下方橘色小字「明日預約」
+    13. 每30分鐘自動更新
 -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -32,93 +34,129 @@
     --orange:  #ffaa44;
     --green:   #4ddd88;
     --gray:    #555;
-    --done-op: 0.30;
+    --fs:      22px; /* 基礎字體，A+/A- 控制這個 */
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
-    width: 100%; height: 100%;
+    width: 100%; min-height: 100%;
     background: var(--bg);
     color: var(--white);
     font-family: 'Noto Sans TC', sans-serif;
+    font-size: var(--fs);
     overflow-x: hidden;
   }
 
-  body { padding: 2vw 3vw 2vw; }
+  body { padding: 1.2em 1.6em 1.2em; }
+
+  /* ── 字體控制按鈕 ── */
+  .font-ctrl {
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+    display: flex;
+    gap: 0.4em;
+    z-index: 999;
+    opacity: 0.7;
+  }
+  .font-ctrl button {
+    background: #222;
+    color: var(--white);
+    border: 1px solid #444;
+    border-radius: 0.4em;
+    padding: 0.3em 0.7em;
+    font-size: 1em;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .font-ctrl button:active { background: #444; }
 
   /* ── TOP BAR ── */
   .top-bar {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.4vw;
-    padding-bottom: 0.9vw;
-    border-bottom: 0.2vw solid #444;
+    align-items: flex-start;
+    margin-bottom: 0.7em;
+    padding-bottom: 0.5em;
+    border-bottom: 2px solid #444;
   }
+
+  .top-left { display: flex; flex-direction: column; gap: 0.1em; }
 
   .top-date {
-    font-size: clamp(1.5rem, 3.4vw, 3.4rem);
+    font-size: 1.6em;
     font-weight: 900;
     color: var(--white);
-    letter-spacing: .04em;
+    letter-spacing: .03em;
+    line-height: 1.2;
   }
 
-  .top-date.tomorrow { color: var(--orange); }
+  .top-tomorrow {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--orange);
+    display: none; /* 預設隱藏，22:00後顯示 */
+  }
 
   .top-time {
-    font-size: clamp(1.5rem, 3.4vw, 3.4rem);
+    font-size: 1.6em;
     font-weight: 900;
     color: var(--white);
-    letter-spacing: .08em;
+    letter-spacing: .06em;
+    line-height: 1.2;
+    text-align: right;
   }
 
   /* ── ROWS ── */
-  .schedule-list { display: flex; flex-direction: column; }
+  .schedule-list { display: flex; flex-direction: column; gap: 0; }
 
   .row {
-    padding: 1vw 0.8vw 0.8vw;
+    padding: 0.55em 0.6em 0.45em;
     border-bottom: 1px solid var(--border);
-    border-left: 3px solid transparent;
-    transition: border-color .3s;
-    margin-bottom: 0.1vw;
+    border: 2px solid transparent;
+    border-radius: 0.4em;
+    margin-bottom: 0.15em;
   }
 
-  /* 當前時間框：白色邊框框起來 */
+  /* 當下時段：白色邊框框起 */
   .row.inprogress {
-    border: 0.2vw solid var(--white);
-    border-radius: 0.5vw;
-    padding: 0.9vw 1vw;
-    margin: 0.3vw 0;
+    border: 2px solid var(--white);
+    border-radius: 0.4em;
     background: #181818;
+    margin-bottom: 0.15em;
   }
 
-  /* 已完成：稍微淡一點但不過暗 */
-  .row.done { opacity: var(--done-op); }
+  /* 完成：底線保留，正常亮度 */
+  .row.done {
+    border-bottom: 1px solid var(--border);
+    border-top: 2px solid transparent;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+  }
 
-  /* ── LINE 1：序號 車牌 車款 時間 ── */
+  /* ── LINE 1 ── */
   .row-line1 {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    font-size: clamp(1.1rem, 2.4vw, 2.6rem);
+    font-size: 1em;
     font-weight: 900;
-    line-height: 1.3;
+    line-height: 1.4;
+    gap: 0;
   }
 
-  .seq   { color: var(--blue); margin-right: 0.2vw; }
-  .eye   { font-size: 0.85em; margin-right: 0.2vw; } /* 👁️ */
-  .plate { color: var(--blue); }
-  .sep   { color: #444; margin: 0 0.3vw; font-weight: 400; }
+  .seq   { color: var(--blue); margin-right: 0.15em; white-space: nowrap; }
+  .eye   { margin-right: 0.1em; }
+  .plate { color: var(--blue); white-space: nowrap; }
+  .sep   { color: #555; margin: 0 0.2em; font-weight: 400; }
   .model { color: var(--blue); }
-  .time  { color: var(--red); margin-left: 0.5vw; }
+  .time  { color: var(--red); margin-left: 0.3em; white-space: nowrap; }
 
-  /* 📞 客：橘色提示 */
   .tel-info {
     color: var(--orange);
-    font-size: clamp(0.85rem, 1.6vw, 1.8rem);
     font-weight: 700;
-    margin-left: 0.5vw;
   }
 
   /* ── LINE 2：施作項目 ── */
@@ -126,12 +164,13 @@
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: 0.8vw;
-    margin-top: 0.3vw;
-    font-size: clamp(0.95rem, 1.85vw, 2rem);
+    margin-top: 0.2em;
+    font-size: 0.95em;
     font-weight: 900;
-    padding-left: 1.8vw;
+    padding-left: 1.4em;
     color: var(--white);
+    line-height: 1.4;
+    word-break: break-all;
   }
 
   /* ── LINE 3：歷史備註 ── */
@@ -139,21 +178,26 @@
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    margin-top: 0.2vw;
-    font-size: clamp(0.8rem, 1.5vw, 1.65rem);
+    margin-top: 0.15em;
+    font-size: 0.82em;
     font-weight: 400;
-    padding-left: 1.8vw;
+    padding-left: 1.4em;
     color: var(--orange);
+    line-height: 1.4;
+    word-break: break-all;
   }
 
-  .msg { font-size: clamp(1rem, 2vw, 2rem); color: #555; padding: 3vw 0; }
-  .err { font-size: clamp(0.9rem, 1.8vw, 1.8rem); color: var(--red); padding: 3vw 0; }
+  .msg { font-size: 1em; color: #555; padding: 1.5em 0; }
+  .err { font-size: 0.95em; color: var(--red); padding: 1.5em 0; }
 </style>
 </head>
 <body>
 
 <div class="top-bar">
-  <div class="top-date" id="hdr-date">—</div>
+  <div class="top-left">
+    <div class="top-date" id="hdr-date">—</div>
+    <div class="top-tomorrow" id="hdr-tomorrow">明日預約</div>
+  </div>
   <div class="top-time" id="live-clock">—</div>
 </div>
 
@@ -161,237 +205,197 @@
   <div class="msg">🍊 讀取行事曆中...</div>
 </div>
 
+<div class="font-ctrl">
+  <button onclick="adjustFont(-2)">A－</button>
+  <button onclick="adjustFont(2)">A＋</button>
+</div>
+
 <script>
 var GAS_URL = 'https://script.google.com/macros/s/AKfycby1Y2NsEW3Lxy8FgwuT4i6wfiiHNI3afBvTYabQ4YSiTIn-DpAntwcm5gkI-6wvYRR5rg/exec';
 
-// ── emoji 辨識 ──
-// 👁️ 未來廠客  🍄 客戶名字標記（隱藏名字）  📞 無資料客  💎 初次填單（備註不顯示）  📝 歷史備註  🔧 施作項目
-var EMOJI_EYE      = '👁';   // 未來廠客
-var EMOJI_MUSHROOM = '🍄';   // 隱藏名字
-var EMOJI_TEL      = '📞';   // 無資料客
-var EMOJI_DIAMOND  = '💎';   // 不顯示
-var EMOJI_PARTY    = '🎉';   // 不顯示
-var EMOJI_MEMO     = '📝';   // 顯示
-var EMOJI_WRENCH   = '🔧';
-
-function hasEmoji(str, emoji) {
-  return str && str.indexOf(emoji) >= 0;
+// ── 字體控制 ──
+var baseFont = 22;
+function adjustFont(delta) {
+  baseFont = Math.min(48, Math.max(12, baseFont + delta));
+  document.documentElement.style.setProperty('--fs', baseFont + 'px');
 }
 
-// 從標題抽取車牌、車款、時間、施作項目
-// 格式：[emoji][車牌]-[🍄客戶名]-[車款]-[里程]-[施作項目]
-// 或：[📞來電說明]-[車款]-[施作項目]
-function parseTitle(title) {
-  // 1. 判斷 flag
-  var isEye     = hasEmoji(title, EMOJI_EYE);
-  var isTel     = hasEmoji(title, EMOJI_TEL);
+// ── emoji ──
+var E = {
+  eye:      '👁',
+  mushroom: '🍄',
+  tel:      '📞',
+  diamond:  '💎',
+  party:    '🎉',
+  memo:     '📝',
+  wrench:   '🔧'
+};
 
-  // 2. 移除開頭所有 emoji（保留文字）
-  var cleaned = title.replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\uFE0F\u200D]/gu, '').trim();
-  // fallback for envs without unicode flag
-  if (cleaned === title) {
-    cleaned = title.replace(/[^\u4e00-\u9fff\uff00-\uffff\w\-]/g, function(c){
-      return c.charCodeAt(0) > 255 && c.charCodeAt(0) < 0x4e00 ? '' : c;
-    }).trim();
-  }
+function hasE(str, emoji) { return str && str.indexOf(emoji) >= 0; }
 
+// 移除字串中所有 emoji
+function stripEmoji(str) {
+  return str.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u200D]/gu, '')
+            .replace(/[^\u4e00-\u9fff\uff00-\uffff\w\-\.]/g, function(c){
+              return c.charCodeAt(0) > 127 ? '' : c;
+            }).trim();
+}
+
+function parseTitle(raw) {
+  var isEye = hasE(raw, E.eye);
+  var isTel = hasE(raw, E.tel);
+  var hasMushroom = hasE(raw, E.mushroom);
+
+  // 移除 emoji 取得純文字，再切 -
+  var cleaned = stripEmoji(raw);
   var parts = cleaned.split('-').map(function(s){ return s.trim(); }).filter(Boolean);
 
-  var plate    = '';
-  var model    = '';
-  var mileage  = '';
-  var items    = '';
-  var telInfo  = '';
+  var plate = '', model = '', mileage = '', items = '', telInfo = '';
 
   if (isTel) {
-    // 📞 格式：📞說明-車款-施作
-    telInfo = parts[0] || '';
-    model   = parts[1] || '';
-    items   = parts.slice(2).join('-');
+    // 📞 客：📞後所有文字都顯示
+    // 把 📞 之後到第一個 - 前的文字全抓
+    var telRaw = raw.replace(/^.*📞\s*/u, '');
+    var telParts = telRaw.split('-').map(function(s){ return s.trim(); });
+    telInfo  = telParts[0] || '';
+    model    = telParts[1] || '';
+    mileage  = telParts[2] || '';
+    items    = telParts.slice(3).join('-');
   } else {
-    // 一般格式：車牌-[🍄名字]-車款-里程-施作
-    plate = parts[0] || '';
-    // parts[1] 可能是客戶名（含🍄標記已被清除，直接跳過）
-    // 判斷：若 title 有 🍄，第二段是名字，跳過
-    var offset = hasEmoji(title, EMOJI_MUSHROOM) ? 2 : 1;
+    plate   = parts[0] || '';
+    // 若有 🍄，parts[1] 是名字跳過
+    var offset = hasMushroom ? 2 : 1;
     model   = parts[offset]     || '';
     mileage = parts[offset + 1] || '';
     items   = parts.slice(offset + 2).join('-');
   }
 
-  return {
-    plate:   plate,
-    model:   model,
-    mileage: mileage,
-    items:   items,
-    isEye:   isEye,
-    isTel:   isTel,
-    telInfo: telInfo,
-    isNew:   (plate === '???' || plate.toUpperCase() === 'NEW')
-  };
+  return { plate, model, mileage, items, telInfo, isEye, isTel,
+           isNew: (plate === '???' || plate.toUpperCase() === 'NEW') };
 }
 
-// 解析備註欄
-// 📝 → 歷史備註（顯示）
-// 💎 → 初次填單（不顯示）
-// 其餘 → 顯示
-function parseDescription(desc) {
-  if (!desc) return { history: '', show: true };
-  if (hasEmoji(desc, EMOJI_DIAMOND) || hasEmoji(desc, EMOJI_PARTY)) return { history: "", show: false };
+function parseDesc(desc) {
+  if (!desc) return { text: '', show: false };
+  if (hasE(desc, E.diamond) || hasE(desc, E.party)) return { text: '', show: false };
   var text = desc.replace(/^📝\s*/, '').trim();
-  return { history: text, show: true };
+  return { text: text, show: !!text };
 }
 
 function toMin(t) {
-  if (!t || t.indexOf(':') < 0) return 0;
-  var s = t.split(':'); return parseInt(s[0]) * 60 + parseInt(s[1]);
+  if (!t || !t.includes(':')) return 0;
+  var p = t.split(':'); return +p[0]*60 + +p[1];
 }
-
 function getStatus(s, e, now) {
-  var n = toMin(now), sv = toMin(s), ev = toMin(e);
-  if (n >= ev) return 'done';
-  if (n >= sv) return 'inprogress';
+  var n=toMin(now), sv=toMin(s), ev=toMin(e);
+  if (n>=ev) return 'done';
+  if (n>=sv) return 'inprogress';
   return 'upcoming';
 }
-
 function getNow() {
-  var d = new Date();
-  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  var d=new Date();
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
-
 function getDisplayDate() {
-  var d = new Date();
-  if (d.getHours() >= 22) d.setDate(d.getDate() + 1);
-  return d;
+  var d=new Date(); if(d.getHours()>=22) d.setDate(d.getDate()+1); return d;
 }
-
 function formatDisplayDate(d) {
-  var DAYS = ['週日','週一','週二','週三','週四','週五','週六'];
-  return (d.getMonth()+1) + '月' + d.getDate() + '日　' + DAYS[d.getDay()];
+  var W=['週日','週一','週二','週三','週四','週五','週六'];
+  return (d.getMonth()+1)+'月'+d.getDate()+'日　'+W[d.getDay()];
 }
-
 function formatQueryDate(d) {
-  return d.getFullYear() + '-'
-    + String(d.getMonth()+1).padStart(2,'0') + '-'
-    + String(d.getDate()).padStart(2,'0');
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
 function renderRow(item, seq, now) {
-  // item 來自 GAS，raw 是原始標題，history 是備註欄原始文字
-  var parsed  = parseTitle(item.raw || '');
-  var descObj = parseDescription(item.history || '');
+  var p   = parseTitle(item.raw || '');
+  var desc = parseDesc(item.history || '');
+  var status = p.isNew ? 'upcoming' : getStatus(item.timeStart, item.timeEnd, now);
+  var seqChar = seq<=20 ? '&#'+(9311+seq)+';' : seq+'.';
+  var eyeMark = p.isEye ? '<span class="eye">👁️</span>' : '';
 
-  var status = parsed.isNew ? 'upcoming' : getStatus(item.timeStart, item.timeEnd, now);
-
-  // 序號 + 👁️
-  var seqChar = seq <= 20 ? '&#' + (9311 + seq) + ';' : seq + '.';
-  var eyeMark = parsed.isEye ? '<span class="eye">👁️</span>' : '';
-
-  // 車牌＋車款（藍色）
+  // Line 1
   var platePart = '';
-  if (parsed.isTel) {
-    // 📞 客：顯示 📞+說明
-    platePart = '<span class="tel-info">📞 ' + parsed.telInfo + '</span>';
+  if (p.isTel) {
+    platePart = '<span class="tel-info">📞&nbsp;' + p.telInfo + '</span>';
+    if (p.model) platePart += '<span class="sep">－</span><span class="model">'+p.model+'</span>';
   } else {
-    platePart = '<span class="plate">' + (parsed.plate || '???') + '</span>'
-      + '<span class="sep">－</span>'
-      + '<span class="model">' + parsed.model + '</span>';
+    platePart = '<span class="plate">'+(p.plate||'???')+'</span>'
+      +'<span class="sep">－</span>'
+      +'<span class="model">'+p.model+'</span>';
   }
+  var mileagePart = p.mileage
+    ? '<span class="sep">－</span><span class="model">'+p.mileage+'</span>' : '';
+  var timePart = '<span class="time">'+item.timeStart+'</span>';
 
-  // 里程
-  var mileagePart = (parsed.mileage && parsed.mileage !== '')
-    ? '<span class="sep">－</span><span class="model">' + parsed.mileage + '</span>' : '';
+  // Line 2：施作項目
+  var line2 = p.items
+    ? '<div class="row-line2">🔧&nbsp;'+p.items+'</div>' : '';
 
-  // 入廠時間（紅色）
-  var timePart = '<span class="time">' + item.timeStart + '</span>';
+  // Line 3：歷史備註
+  var line3 = desc.show
+    ? '<div class="row-line3">📝&nbsp;'+desc.text+'</div>' : '';
 
-  // 施作項目（白色，第二行，🔧 開頭）
-  var line2 = '';
-  if (parsed.items) {
-    line2 = '<div class="row-line2">🔧 ' + parsed.items + '</div>';
-  }
-
-  // 歷史備註（橘色，第三行，📝 開頭）
-  var line3 = '';
-  if (descObj.show && descObj.history) {
-    line3 = '<div class="row-line3">📝 ' + descObj.history + '</div>';
-  }
-
-  return '<div class="row ' + status + '">'
-    + '<div class="row-line1">'
-    + '<span class="seq">' + seqChar + '</span>'
-    + eyeMark
-    + platePart
-    + mileagePart
-    + '<span class="sep">－</span>'
-    + timePart
-    + '</div>'
-    + line2
-    + line3
-    + '</div>';
+  return '<div class="row '+status+'">'
+    +'<div class="row-line1">'
+    +'<span class="seq">'+seqChar+'</span>'+eyeMark
+    +platePart+mileagePart
+    +'<span class="sep">－</span>'+timePart
+    +'</div>'
+    +line2+line3
+    +'</div>';
 }
 
 function updateClock() {
   document.getElementById('live-clock').textContent = getNow();
 }
 
-var _jsonpTimer = null;
+var _timer = null;
 
 function fetchAndRender() {
   updateClock();
-  var displayDate = getDisplayDate();
-  var queryDate   = formatQueryDate(displayDate);
-  var isTomorrow  = new Date().getHours() >= 22;
-  var label       = formatDisplayDate(displayDate);
+  var dd = getDisplayDate();
+  var qd = formatQueryDate(dd);
+  var isTmr = new Date().getHours() >= 22;
 
-  var dateEl = document.getElementById('hdr-date');
-  dateEl.textContent = label + (isTomorrow ? '　（明日預約）' : '');
-  if (isTomorrow) dateEl.classList.add('tomorrow');
-  else            dateEl.classList.remove('tomorrow');
+  document.getElementById('hdr-date').textContent = formatDisplayDate(dd);
+  var tmrEl = document.getElementById('hdr-tomorrow');
+  tmrEl.style.display = isTmr ? 'block' : 'none';
 
   document.getElementById('schedule-list').innerHTML = '<div class="msg">🍊 讀取行事曆中...</div>';
+  if (window._cb) window._cb = null;
+  var old = document.getElementById('_gs'); if(old) old.remove();
 
-  if (window._chiliCallback) window._chiliCallback = null;
-  var old = document.getElementById('_gas_script');
-  if (old) old.parentNode.removeChild(old);
-
-  _jsonpTimer = setTimeout(function() {
+  _timer = setTimeout(function(){
     document.getElementById('schedule-list').innerHTML =
       '<div class="err">⚠️ 行事曆讀取逾時，請確認 GAS 設定</div>';
   }, 12000);
 
-  window._chiliCallback = function(data) {
-    clearTimeout(_jsonpTimer);
+  window._cb = function(data) {
+    clearTimeout(_timer);
     if (!data.ok) {
       document.getElementById('schedule-list').innerHTML =
-        '<div class="err">⚠️ 讀取失敗：' + (data.error || '未知錯誤') + '</div>';
-      return;
+        '<div class="err">⚠️ 讀取失敗：'+(data.error||'未知')+'</div>'; return;
     }
-    var events = (data.events || []).filter(function(e){ return e.date === queryDate; });
-    if (events.length === 0) {
+    var evs = (data.events||[]).filter(function(e){ return e.date===qd; });
+    if (!evs.length) {
       document.getElementById('schedule-list').innerHTML =
-        '<div class="msg">' + label + '　尚無預約行程</div>';
-      return;
+        '<div class="msg">'+formatDisplayDate(dd)+'　尚無預約行程</div>'; return;
     }
-    var nowStr = getNow();
+    var now = getNow();
     document.getElementById('schedule-list').innerHTML =
-      events.map(function(item, i){ return renderRow(item, i+1, nowStr); }).join('');
+      evs.map(function(item,i){ return renderRow(item,i+1,now); }).join('');
   };
 
   var s = document.createElement('script');
-  s.id  = '_gas_script';
-  s.src = GAS_URL + '?callback=_chiliCallback&date=' + queryDate + '&t=' + Date.now();
+  s.id = '_gs';
+  s.src = GAS_URL+'?callback=_cb&date='+qd+'&t='+Date.now();
   document.body.appendChild(s);
 }
 
-// 啟動
 fetchAndRender();
-setInterval(updateClock, 10000);          // 時鐘每10秒
-setInterval(fetchAndRender, 30 * 60 * 1000); // 每30分鐘重讀行事曆
-setInterval(function(){                   // 整點＋半點重刷
-  var m = new Date().getMinutes();
-  if (m === 0 || m === 30) fetchAndRender();
-}, 60000);
+setInterval(updateClock, 10000);
+setInterval(fetchAndRender, 30*60*1000);
+setInterval(function(){ var m=new Date().getMinutes(); if(m===0||m===30) fetchAndRender(); }, 60000);
 </script>
 </body>
 </html>
