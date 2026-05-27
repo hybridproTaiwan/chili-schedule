@@ -1,97 +1,107 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<!--
+  馳立汽車｜每日排程系統
+  橘寶製作 🍊
+  更新日期：2026-05-27 23:30
+  更新內容：
+    1. 黑底白字主題（全頁改為深色背景）
+    2. 車牌／日期／項目顏色配合黑底調整
+    3. 修正隔日排程顯示邏輯（22:00後自動切換）
+    4. 字體改用 vw 自適應，投影不會亂排
+    5. 滿版設計消除黑邊
+-->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>馳立汽車｜每日排程</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #ffffff;
-    --blue: #1a5fd4;
-    --red: #d42020;
-    --black: #111111;
-    --orange: #d46b00;
-    --green: #1a7a3c;
-    --gray: #888;
-    --done-opacity: 0.32;
+    --bg:           #0d0d0d;
+    --surface:      #161616;
+    --border:       #2a2a2a;
+    --blue:         #6ab0ff;
+    --red:          #ff6b6b;
+    --white:        #f0f0f0;
+    --orange:       #ffaa44;
+    --green:        #4ddd88;
+    --gray:         #666;
+    --done-opacity: 0.28;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     background: var(--bg);
-    color: var(--black);
+    color: var(--white);
     font-family: 'Noto Sans TC', sans-serif;
-    /* 滿版：消除黑邊 */
     overflow-x: hidden;
   }
 
-  body {
-    padding: 2.5vw 3.5vw 2vw;
-  }
+  body { padding: 2.2vw 3.2vw 2vw; }
 
   /* ── TOP BAR ── */
   .top-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.8vw;
-    padding-bottom: 1.2vw;
-    border-bottom: 0.3vw solid var(--black);
+    margin-bottom: 1.6vw;
+    padding-bottom: 1vw;
+    border-bottom: 0.25vw solid #444;
   }
 
   .box-value {
-    font-size: clamp(1.6rem, 3.8vw, 3.8rem);
+    font-size: clamp(1.6rem, 3.6vw, 3.6rem);
     font-weight: 900;
-    color: var(--black);
+    color: var(--white);
     letter-spacing: .04em;
     white-space: nowrap;
   }
+
+  .box-value.tomorrow { color: var(--orange); }
 
   /* ── ROWS ── */
   .schedule-list { display: flex; flex-direction: column; }
 
   .row {
-    padding: 1.2vw 0 1vw;
-    border-bottom: 1px solid #ddd;
+    padding: 1.1vw 0 0.9vw;
+    border-bottom: 1px solid var(--border);
     transition: opacity .3s;
   }
 
   .row.done { opacity: var(--done-opacity); }
 
   .row.inprogress {
-    background: #f0fff5;
-    border-left: 0.5vw solid var(--green);
-    padding-left: 1.2vw;
-    margin-left: -1.2vw;
+    background: #0d1f14;
+    border-left: 0.45vw solid var(--green);
+    padding-left: 1.1vw;
+    margin-left: -1.1vw;
   }
 
-  /* Line 1 */
+  /* Line 1：序號 車牌 車款 里程 時間 */
   .row-line1 {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    font-size: clamp(1.2rem, 2.6vw, 2.8rem);
+    font-size: clamp(1.15rem, 2.5vw, 2.7rem);
     font-weight: 900;
     line-height: 1.3;
-    gap: 0;
   }
 
-  .seq     { color: var(--blue); margin-right: 0.3vw; }
+  .seq     { color: var(--blue);  margin-right: 0.3vw; }
   .plate   { color: var(--blue); }
-  .sep     { color: var(--black); margin: 0 0.4vw; font-weight: 400; }
+  .sep     { color: #555; margin: 0 0.35vw; font-weight: 400; }
   .model   { color: var(--blue); }
   .mileage { color: var(--blue); }
-  .time    { color: var(--red); margin-left: 0.4vw; }
+  .time    { color: var(--red);  margin-left: 0.4vw; }
 
   .new-badge {
     color: var(--orange);
-    font-size: clamp(0.7rem, 1.1vw, 1.1rem);
+    font-size: clamp(0.65rem, 1vw, 1rem);
     font-weight: 700;
-    margin-left: 0.8vw;
+    margin-left: 0.7vw;
     border: 0.15vw solid var(--orange);
     border-radius: 0.4vw;
     padding: 0 0.5vw;
@@ -99,25 +109,25 @@
     white-space: nowrap;
   }
 
-  /* Line 2 */
+  /* Line 2：施作 檢測 歷史 */
   .row-line2 {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: 1.5vw;
-    margin-top: 0.4vw;
-    font-size: clamp(1rem, 2vw, 2.2rem);
+    gap: 1.2vw;
+    margin-top: 0.35vw;
+    font-size: clamp(0.95rem, 1.9vw, 2.1rem);
     font-weight: 700;
-    padding-left: 2.2vw;
+    padding-left: 2vw;
   }
 
-  .col-action  { color: var(--black); }
+  .col-action  { color: var(--white); }
   .col-inspect { color: var(--green); }
   .col-history { color: var(--orange); font-weight: 500; }
-  .col-dot     { color: var(--gray); font-weight: 400; }
+  .col-dot     { color: var(--gray);  font-weight: 400; }
 
-  .msg { font-size: clamp(1rem, 2vw, 2rem); color: #888; padding: 3vw 0; }
-  .err { font-size: clamp(0.9rem, 1.8vw, 1.8rem); color: #d42020; padding: 3vw 0; }
+  .msg { font-size: clamp(1rem, 2vw, 2rem); color: #555; padding: 3vw 0; }
+  .err { font-size: clamp(0.9rem, 1.8vw, 1.8rem); color: var(--red); padding: 3vw 0; }
 </style>
 </head>
 <body>
@@ -132,82 +142,85 @@
 </div>
 
 <script>
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbxGJbCJkX4SbWDUJPOyJMNk1tk1AvegO0Jd-F3fRVpha5_QhJIcTcXObcm6HDxHiuvp_w/exec';
+// ── GAS 網址（如需換網址在此修改）──
+var GAS_URL = 'https://script.google.com/macros/s/AKfycby1Y2NsEW3Lxy8FgwuT4i6wfiiHNI3afBvTYabQ4YSiTIn-DpAntwcm5gkI-6wvYRR5rg/exec';
 
-var ACTION_KW  = ['機油','濾芯','煞車皮','碟盤','皮帶','火星塞','冷氣','洗','更換','保養','充電','AGM','電瓶','輪胎','鏈條','修','補','換','清','固定','線路查修','15W','20W','5W','保','安裝','室內'];
+var ACTION_KW  = ['機油','濾芯','煞車皮','碟盤','皮帶','火星塞','冷氣','洗','更換','保養','充電','AGM','電瓶','輪胎','鏈條','修','補','換','清','固定','線路查修','15W','20W','5W','保','安裝','室內','返修','燈'];
 var INSPECT_KW = ['檢查','檢測','診斷','複檢','掃碼','OBD','試車','確認','評估','查修','全檢','管路'];
 
 function classifyItems(raw) {
   if (!raw) return { actions: [], inspects: [] };
   var parts = raw.split(/[、，,+＋\/／]/g).map(function(s){ return s.trim(); }).filter(Boolean);
   var actions = [], inspects = [];
-  for (var i=0; i<parts.length; i++) {
+  for (var i = 0; i < parts.length; i++) {
     var p = parts[i];
-    var isI = INSPECT_KW.some(function(k){ return p.indexOf(k)>=0; });
+    var isI = INSPECT_KW.some(function(k){ return p.indexOf(k) >= 0; });
     if (isI) inspects.push(p); else actions.push(p);
   }
   return { actions: actions, inspects: inspects };
 }
 
-function toMin(t) { var s=t.split(':'); return parseInt(s[0])*60+parseInt(s[1]); }
+function toMin(t) { var s = t.split(':'); return parseInt(s[0]) * 60 + parseInt(s[1]); }
 
 function getStatus(s, e, now) {
-  var n=toMin(now), sv=toMin(s), ev=toMin(e);
-  if (n>=ev) return 'done';
-  if (n>=sv) return 'inprogress';
+  var n = toMin(now), sv = toMin(s), ev = toMin(e);
+  if (n >= ev) return 'done';
+  if (n >= sv) return 'inprogress';
   return 'upcoming';
 }
 
 function getNow() {
-  var d=new Date();
-  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  var d = new Date();
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
 
-// ── 晚上10點後顯示隔日 ──
+// 22:00 後自動切換隔日
 function getDisplayDate() {
   var d = new Date();
-  if (d.getHours() >= 22) {
-    d.setDate(d.getDate() + 1);
-  }
+  if (d.getHours() >= 22) d.setDate(d.getDate() + 1);
   return d;
 }
 
 function formatDisplayDate(d) {
   var DAYS = ['週日','週一','週二','週三','週四','週五','週六'];
-  return (d.getMonth()+1)+'月'+d.getDate()+'日 '+DAYS[d.getDay()];
+  return (d.getMonth()+1) + '月' + d.getDate() + '日　' + DAYS[d.getDay()];
 }
 
 function formatQueryDate(d) {
-  // GAS 端需要接收 date 參數來篩選隔日
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  return d.getFullYear() + '-'
+    + String(d.getMonth()+1).padStart(2,'0') + '-'
+    + String(d.getDate()).padStart(2,'0');
 }
 
 function renderRow(item, seq, now) {
   var status = item.isNew ? 'upcoming' : getStatus(item.timeStart, item.timeEnd, now);
   var ci = classifyItems(item.items);
-  var plateTxt = item.isNew ? '???' : item.plate;
-  var newBadge = item.isNew ? '<span class="new-badge">待補資料</span>' : '';
+  var plateTxt  = item.isNew ? '???' : item.plate;
+  var newBadge  = item.isNew ? '<span class="new-badge">待補資料</span>' : '';
   var mileagePart = (item.mileage && item.mileage !== '—' && item.mileage !== '')
-    ? '<span class="sep">－</span><span class="mileage">'+item.mileage+'</span>' : '';
-  var actionTxt  = ci.actions.length  ? '<span class="col-action">'+ci.actions.join('、')+'</span>'   : '';
-  var inspectTxt = ci.inspects.length ? '<span class="col-inspect">'+ci.inspects.join('、')+'</span>' : '';
+    ? '<span class="sep">－</span><span class="mileage">' + item.mileage + '</span>' : '';
+  var actionTxt  = ci.actions.length
+    ? '<span class="col-action">'  + ci.actions.join('、')  + '</span>' : '';
+  var inspectTxt = ci.inspects.length
+    ? '<span class="col-inspect">' + ci.inspects.join('、') + '</span>' : '';
   var sep1 = (actionTxt && inspectTxt) ? '<span class="col-dot">｜</span>' : '';
-  var historyTxt = item.history ? '<span class="col-dot">｜</span><span class="col-history">📝 '+item.history+'</span>' : '';
-  var seqChar = seq <= 20 ? '&#'+(9311+seq)+';' : seq+'.';
-  var customerPart = item.customer ? item.customer+'－' : '';
+  var historyTxt = item.history
+    ? '<span class="col-dot">｜</span><span class="col-history">📝 ' + item.history + '</span>' : '';
+  var seqChar = seq <= 20 ? '&#' + (9311 + seq) + ';' : seq + '.';
+  var customerPart = item.customer ? item.customer + '－' : '';
 
-  return '<div class="row '+status+'">'
-    +'<div class="row-line1">'
-    +'<span class="seq">'+seqChar+'</span>'
-    +'<span class="plate">'+plateTxt+'</span>'+newBadge
-    +'<span class="sep">－</span>'
-    +'<span class="model">'+customerPart+item.model+'</span>'
-    +mileagePart
-    +'<span class="sep">－</span>'
-    +'<span class="time">'+item.timeStart+'</span>'
-    +'</div>'
-    +'<div class="row-line2">'+actionTxt+sep1+inspectTxt+historyTxt+'</div>'
-    +'</div>';
+  return '<div class="row ' + status + '">'
+    + '<div class="row-line1">'
+    + '<span class="seq">' + seqChar + '</span>'
+    + '<span class="plate">' + plateTxt + '</span>' + newBadge
+    + '<span class="sep">－</span>'
+    + '<span class="model">' + customerPart + item.model + '</span>'
+    + mileagePart
+    + '<span class="sep">－</span>'
+    + '<span class="time">' + item.timeStart + '</span>'
+    + '</div>'
+    + '<div class="row-line2">' + actionTxt + sep1 + inspectTxt + historyTxt + '</div>'
+    + '</div>';
 }
 
 function updateClock() {
@@ -220,12 +233,13 @@ function fetchAndRender() {
   updateClock();
   var displayDate = getDisplayDate();
   var queryDate   = formatQueryDate(displayDate);
+  var isTomorrow  = new Date().getHours() >= 22;
+  var label       = formatDisplayDate(displayDate);
 
-  // 更新日期顯示（晚上10點後自動顯示明天）
-  var label = formatDisplayDate(displayDate);
-  var now = new Date();
-  if (now.getHours() >= 22) label += '　（明日預約）';
-  document.getElementById('hdr-date').textContent = label;
+  var dateEl = document.getElementById('hdr-date');
+  dateEl.textContent = label + (isTomorrow ? '　（明日預約）' : '');
+  if (isTomorrow) dateEl.classList.add('tomorrow');
+  else            dateEl.classList.remove('tomorrow');
 
   document.getElementById('schedule-list').innerHTML = '<div class="msg">🍊 讀取行事曆中...</div>';
 
@@ -236,30 +250,29 @@ function fetchAndRender() {
   _jsonpTimer = setTimeout(function() {
     document.getElementById('schedule-list').innerHTML =
       '<div class="err">⚠️ 行事曆讀取逾時，請確認 GAS 設定</div>';
-  }, 10000);
+  }, 12000);
 
   window._chiliCallback = function(data) {
     clearTimeout(_jsonpTimer);
     if (!data.ok) {
       document.getElementById('schedule-list').innerHTML =
-        '<div class="err">⚠️ 讀取失敗：'+(data.error||'未知錯誤')+'</div>';
+        '<div class="err">⚠️ 讀取失敗：' + (data.error || '未知錯誤') + '</div>';
       return;
     }
-    // 前端再篩一次確保只顯示目標日期
     var events = (data.events || []).filter(function(e){ return e.date === queryDate; });
     if (events.length === 0) {
       document.getElementById('schedule-list').innerHTML =
-        '<div class="msg">'+label.replace('　（明日預約）','')+'　尚無預約行程</div>';
+        '<div class="msg">' + label + '　尚無預約行程</div>';
       return;
     }
     var nowStr = getNow();
     document.getElementById('schedule-list').innerHTML =
-      events.map(function(item,i){ return renderRow(item,i+1,nowStr); }).join('');
+      events.map(function(item, i){ return renderRow(item, i+1, nowStr); }).join('');
   };
 
   var s = document.createElement('script');
   s.id  = '_gas_script';
-  s.src = GAS_URL+'?callback=_chiliCallback&date='+queryDate+'&t='+Date.now();
+  s.src = GAS_URL + '?callback=_chiliCallback&date=' + queryDate + '&t=' + Date.now();
   document.body.appendChild(s);
 }
 
@@ -267,11 +280,8 @@ function fetchAndRender() {
 fetchAndRender();
 setInterval(updateClock, 10000);
 setInterval(fetchAndRender, 300000); // 每5分鐘重讀
-
-// 整點重刷（確保22:00準時切換隔日）
-setInterval(function(){
-  var d = new Date();
-  if (d.getMinutes() === 0) fetchAndRender();
+setInterval(function(){              // 整點重刷（22:00準時切換）
+  if (new Date().getMinutes() === 0) fetchAndRender();
 }, 60000);
 </script>
 </body>
